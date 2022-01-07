@@ -54,6 +54,10 @@ import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_STORAGE_CLASS;
 import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_STREAMING_UPLOAD_ENABLED;
 import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_STREAMING_UPLOAD_PART_SIZE;
 import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_USER_AGENT_PREFIX;
+import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_PROXY_HOST;
+import static io.trino.plugin.hive.s3.TrinoS3FileSystem.S3_PROXY_PORT;
+
+
 
 public class TrinoS3ConfigurationInitializer
         implements ConfigurationInitializer
@@ -90,6 +94,8 @@ public class TrinoS3ConfigurationInitializer
     private final boolean skipGlacierObjects;
     private final boolean s3StreamingUploadEnabled;
     private final DataSize streamingPartSize;
+    private final String s3ProxyHost;
+    private final int s3ProxyPort;
 
     @Inject
     public TrinoS3ConfigurationInitializer(HiveS3Config config)
@@ -126,6 +132,8 @@ public class TrinoS3ConfigurationInitializer
         this.requesterPaysEnabled = config.isRequesterPaysEnabled();
         this.s3StreamingUploadEnabled = config.isS3StreamingUploadEnabled();
         this.streamingPartSize = config.getS3StreamingPartSize();
+        this.s3ProxyHost = config.getS3ProxyHost();
+        this.s3ProxyPort = config.getS3ProxyPort();
     }
 
     @Override
@@ -170,6 +178,12 @@ public class TrinoS3ConfigurationInitializer
         }
         if (sseKmsKeyId != null) {
             config.set(S3_SSE_KMS_KEY_ID, sseKmsKeyId);
+        }
+        if (s3ProxyHost != null) {
+            config.set(S3_PROXY_HOST, s3ProxyHost);
+        }
+        if (s3ProxyPort != 0) {
+            config.setInt(S3_PROXY_PORT, s3ProxyPort);
         }
         config.setInt(S3_MAX_CLIENT_RETRIES, maxClientRetries);
         config.setInt(S3_MAX_ERROR_RETRIES, maxErrorRetries);

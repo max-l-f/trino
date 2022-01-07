@@ -68,6 +68,8 @@ public class HiveS3Config
     private boolean requesterPaysEnabled;
     private boolean s3StreamingUploadEnabled = true;
     private DataSize s3StreamingPartSize = DataSize.of(16, MEGABYTE);
+    private String s3ProxyHost;
+    private int s3ProxyPort;
 
     public String getS3AwsAccessKey()
     {
@@ -492,5 +494,31 @@ public class HiveS3Config
     {
         this.s3StreamingPartSize = s3StreamingPartSize;
         return this;
+    }
+
+    @ConfigDescription("HTTP proxy host the S3 client will connect through")
+    @Config("hive.s3.proxy-host")
+    public HiveS3Config setS3ProxyHost(String s3ProxyHost)
+    {
+        this.s3ProxyHost = s3ProxyHost;
+        return this;
+    }
+
+    public String getS3ProxyHost()
+    {
+        return s3ProxyHost;
+    }
+
+    @ConfigDescription("HTTP proxy port the S3 client will connect through")
+    @Config("hive.s3.proxy-port")
+    public HiveS3Config setS3ProxyPort(int s3ProxyPort)
+    {
+        this.s3ProxyPort = s3ProxyPort;
+        return this;
+    }
+
+    public int getS3ProxyPort()
+    {
+        return s3ProxyPort;
     }
 }

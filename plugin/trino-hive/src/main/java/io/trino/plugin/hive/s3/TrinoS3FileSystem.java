@@ -195,6 +195,8 @@ public class TrinoS3FileSystem
     public static final String S3_STREAMING_UPLOAD_ENABLED = "trino.s3.streaming.enabled";
     public static final String S3_STREAMING_UPLOAD_PART_SIZE = "trino.s3.streaming.part-size";
     public static final String S3_STORAGE_CLASS = "trino.s3.storage-class";
+    public static final String S3_PROXY_HOST = "trino.s3.proxy-host";
+    public static final String S3_PROXY_PORT = "trino.s3.proxy-port";
 
     private static final Logger log = Logger.get(TrinoS3FileSystem.class);
     private static final TrinoS3FileSystemStats STATS = new TrinoS3FileSystemStats();
@@ -232,6 +234,8 @@ public class TrinoS3FileSystem
     private boolean streamingUploadEnabled;
     private int streamingUploadPartSize;
     private TrinoS3StorageClass s3StorageClass;
+    private String s3ProxyHost;
+    private int s3ProxyPort;
 
     private final ExecutorService uploadExecutor = newCachedThreadPool(threadsNamed("s3-upload-%s"));
 
@@ -280,6 +284,8 @@ public class TrinoS3FileSystem
         this.streamingUploadEnabled = conf.getBoolean(S3_STREAMING_UPLOAD_ENABLED, defaults.isS3StreamingUploadEnabled());
         this.streamingUploadPartSize = toIntExact(conf.getLong(S3_STREAMING_UPLOAD_PART_SIZE, defaults.getS3StreamingPartSize().toBytes()));
         this.s3StorageClass = conf.getEnum(S3_STORAGE_CLASS, defaults.getS3StorageClass());
+        this.s3ProxyHost = conf.get(S3_PROXY_HOST, defaults.getS3ProxyHost());
+        this.s3ProxyPort = conf.getInt(S3_PROXY_PORT, defaults.getS3ProxyPort());
 
         ClientConfiguration configuration = new ClientConfiguration()
                 .withMaxErrorRetry(maxErrorRetries)
@@ -287,6 +293,8 @@ public class TrinoS3FileSystem
                 .withConnectionTimeout(toIntExact(connectTimeout.toMillis()))
                 .withSocketTimeout(toIntExact(socketTimeout.toMillis()))
                 .withMaxConnections(maxConnections)
+//                .withProxyHost(s3ProxyHost)
+//                .withProxyPort(s3ProxyPort)
                 .withUserAgentPrefix(userAgentPrefix)
                 .withUserAgentSuffix("Trino");
 
@@ -848,6 +856,13 @@ public class TrinoS3FileSystem
             }
             SignerFactory.registerSigner(S3_CUSTOM_SIGNER, klass);
             clientConfig.setSignerOverride(S3_CUSTOM_SIGNER);
+        }
+        if (s3ProxyHost != null && !s3ProxyHost.equals("")) {
+            clientConfig.setProxyHost(s3ProxyHost);
+        }
+
+        if (s3ProxyPort != 0 ) {
+            clientConfig.setProxyPort(s3ProxyPort);
         }
 
         if (encryptionMaterialsProvider.isPresent()) {
